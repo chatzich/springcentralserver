@@ -1,20 +1,22 @@
 package com.centralserver.controller;
 
+import com.centralserver.AppStartupRunner;
 import com.centralserver.exception.ResourceNotFoundException;
 import com.centralserver.model.NumberArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import com.centralserver.repository.NumberArrayRepository;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
+
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 public class NumberArrayController {
 
     @Autowired
@@ -26,40 +28,31 @@ public class NumberArrayController {
     }
 
     @PostMapping("/numberarrays")
-    public NumberArray createQuestion(@Valid @RequestBody NumberArray question) {
+    public NumberArray createQuestion(@Valid @RequestBody NumberArray question) throws JsonProcessingException {
          String destUri = "ws://localhost:1234";
-        
 
-        WebSocketClient client = new WebSocketClient();
-        SimpleEchoSocket socket = new SimpleEchoSocket();
+        NumberArray initialNumArray = questionRepository.save(question);
         try
         {
-            client.start();
-
+            ObjectMapper mapper = new ObjectMapper();
+            SortSocket socket = new SortSocket();
+            socket.setMessage(mapper.writeValueAsString(initialNumArray));
             URI echoUri = new URI(destUri);
-            ClientUpgradeRequest request = new ClientUpgradeRequest();
-            client.connect(socket, echoUri, request);
+            AppStartupRunner.client.connect(socket, echoUri);
             System.out.printf("Connecting to : %s%n", echoUri);
 
             // wait for closed socket connection.
-            socket.awaitClose(5, TimeUnit.SECONDS);
+            socket.awaitClose(100, TimeUnit.SECONDS);
+            initialNumArray.setSorted(socket.getRespose());
         }
         catch (Throwable t)
         {
             t.printStackTrace();
         }
-        finally
-        {
-            try
-            {
-                client.stop();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-        return questionRepository.save(question);
+
+        System.out.printf("about to save the final numarray");
+
+        return questionRepository.save(initialNumArray);
     }
 
     @PutMapping("/numberarrays/{numberarrayId}/sorted")

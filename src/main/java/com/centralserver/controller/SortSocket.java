@@ -17,20 +17,40 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
  * Basic Echo Client Socket
  */
 @WebSocket(maxTextMessageSize = 64 * 1024)
-public class SimpleEchoSocket
+public class SortSocket
 {
+    private String message;
+    private String response = null;
+
     private final CountDownLatch closeLatch;
     @SuppressWarnings("unused")
     private Session session;
 
-    public SimpleEchoSocket()
+    void setMessage(String message) {
+        this.message = message;
+    }
+
+    String getRespose() {
+        return this.response;
+    }
+
+    public SortSocket()
     {
         this.closeLatch = new CountDownLatch(1);
     }
 
     public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException
     {
-        return this.closeLatch.await(duration, unit);
+        try {
+            while(this.response == null) {
+                this.wait(10);
+            }
+
+        } catch (Throwable t)
+        {
+
+        }
+        return true;
     }
 
     @OnWebSocketClose
@@ -49,10 +69,7 @@ public class SimpleEchoSocket
         try
         {
             Future<Void> fut;
-            fut = session.getRemote().sendStringByFuture("Hello");
-            fut.get(2, TimeUnit.SECONDS); // wait for send to complete.
-
-            fut = session.getRemote().sendStringByFuture("Thanks for the conversation.");
+            fut = session.getRemote().sendStringByFuture(this.message);
             fut.get(2, TimeUnit.SECONDS); // wait for send to complete.
         }
         catch (Throwable t)
@@ -64,11 +81,9 @@ public class SimpleEchoSocket
     @OnWebSocketMessage
     public void onMessage(String msg)
     {
-        System.out.printf("Got msg: %s%n", msg);
-        if (msg.contains("Thanks"))
-        {
-            session.close(StatusCode.NORMAL, "I'm done");
-        }
+        System.out.printf("Got message:" + msg);
+
+        this.response = msg;
     }
 
     @OnWebSocketError
