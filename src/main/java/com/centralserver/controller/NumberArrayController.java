@@ -39,11 +39,11 @@ public class NumberArrayController {
             socket.setMessage(mapper.writeValueAsString(initialNumArray));
             URI echoUri = new URI(destUri);
             AppStartupRunner.client.connect(socket, echoUri);
-            System.out.printf("Connecting to : %s%n", echoUri);
 
             // wait for closed socket connection.
             socket.awaitClose(100, TimeUnit.SECONDS);
-            initialNumArray.setSorted(socket.getRespose());
+            System.out.printf("Sorted:" + socket.getResponse() + "\n");
+            initialNumArray.setSorted(socket.getResponse());
         }
         catch (Throwable t)
         {

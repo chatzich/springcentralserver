@@ -30,7 +30,7 @@ public class SortSocket
         this.message = message;
     }
 
-    String getRespose() {
+    String getResponse() {
         return this.response;
     }
 
@@ -41,16 +41,18 @@ public class SortSocket
 
     public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException
     {
-        try {
-            while(this.response == null) {
-                this.wait(10);
+        System.out.println("awaitClose1");
+
+        while(this.response == null) {
+            System.out.println("awaitClose2:" + this.response);
+            try {
+                wait(10);
+            } catch (Throwable t) {
+
             }
-
-        } catch (Throwable t)
-        {
-
         }
-        return true;
+
+       return true;
     }
 
     @OnWebSocketClose
@@ -68,9 +70,7 @@ public class SortSocket
         this.session = session;
         try
         {
-            Future<Void> fut;
-            fut = session.getRemote().sendStringByFuture(this.message);
-            fut.get(2, TimeUnit.SECONDS); // wait for send to complete.
+            session.getRemote().sendString(this.message);
         }
         catch (Throwable t)
         {
