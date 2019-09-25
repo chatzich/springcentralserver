@@ -14,6 +14,7 @@ import com.centralserver.repository.NumberArrayRepository;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
+import org.springframework.data.domain.PageRequest;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -23,8 +24,8 @@ public class NumberArrayController {
     private NumberArrayRepository questionRepository;
 
     @GetMapping("/numberarrays")
-    public Page<NumberArray> getQuestions(Pageable pageable) {
-        return questionRepository.findAll(pageable);
+    public Page<NumberArray> getQuestions() {
+        return questionRepository.findAll(Pageable.unpaged());
     }
 
     @PostMapping("/numberarrays")
