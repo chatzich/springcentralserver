@@ -39,12 +39,11 @@ public class SortSocket
         this.closeLatch = new CountDownLatch(1);
     }
 
-    public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException
+    public boolean awaitResponse(int duration) throws InterruptedException
     {
-        System.out.println("awaitClose1");
+        long start = System.currentTimeMillis();
 
-        while(this.response == null) {
-            System.out.println("awaitClose2:" + this.response);
+        while(this.response == null && System.currentTimeMillis() - start < duration) {
             try {
                 wait(10);
             } catch (Throwable t) {
