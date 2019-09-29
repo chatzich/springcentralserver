@@ -1,10 +1,7 @@
-FROM maven
-RUN git clone https://github.com/ironexmaiden/springcentralserver.git
-RUN cd springcentralserver && mvn install
-	
+FROM java:openjdk-8-jdk-alpine
 
 # add directly the jar
-COPY springcentralserver/target/*.jar /app.jar
+ADD target/*.jar /app.jar
 
 # to create a modification date
 RUN sh -c 'touch /app.jar'

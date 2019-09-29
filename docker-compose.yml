@@ -1,0 +1,18 @@
+version: '2'
+services:
+        # todo-nginx:
+        #   build: todo-frontend/.
+        #   ports:
+        #     - "80:80"
+        #   depends_on:
+        #     - todo-rest
+  sort-rest:
+    build: .
+    depends_on:
+      - sort-db
+  sort-db:
+    image: postgres:9.4.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
